@@ -36,3 +36,22 @@ export function fetchFeaturedProducts() {
 export function fetchOneProduct(iri) {
     return axios.get(iri)
 }
+
+
+/**
+* Retrieves un ensemble de produits identifiés par un tableau IRI
+*
+* @param {string[]} ids 
+* @return {Promise}
+*/
+export function fetchProductsById(ids) {
+    if(!ids.length) {
+        return Promise.resolve({ data: { 'hydra:member': [] } })
+    }
+    return axios.get(
+        'api/products',
+        {
+                params: { id: ids },
+        },
+    )
+}
