@@ -1,11 +1,21 @@
-import { fetchProductsById, fetchProducts } from '../services/products-service';
+import {
+    fetchProductsById,
+    fetchProducts,
+    fetchFeaturedProducts
+} from '../services/products-service';
 import { fetchColors } from '../services/colors-service';
 import { updateCartItemQuantity } from '../../tutorial/cart-service';
 import { removeItemFromCart } from '../services/cart-service';
 <template>
    <div :class="[$style.component, 'container-fluid']">
         <div class="row">
-            <aside class="col-xs-12 col-lg-3" />
+            <aside class="col-xs-12 col-lg-3" >
+                <cart-sidebar 
+                    v-if="featuredProduct" 
+                    :featured-product="featuredProduct" 
+                />
+            </aside>
+
             <div class="col-xs-12 col-lg-9">
                 <title-component text="Shopping Cart" />
                 <div class="content p-3">
@@ -30,7 +40,8 @@ import TitleComponent from '@/components/title'
 import ShoppingCartMixin from '@/mixins/get-shopping-cart'
 import Loading from '@/components/loading'
 import ShoppingCartList from '@/components/shopping-cart'
-import { fetchProductsById } from '@/services/products-service'
+import CartSidebar from '@/components/shopping-cart/cart-sidebar'
+import { fetchProductsById, fetchFeaturedProducts } from '@/services/products-service'
 import { fetchColors } from '@/services/colors-service'
 
 export default {
@@ -39,6 +50,7 @@ export default {
         Loading,
         TitleComponent,
         ShoppingCartList,
+        CartSidebar,
        
     },
     mixins: [ShoppingCartMixin],
@@ -46,6 +58,7 @@ export default {
         return {
             products: null,
             colors: null,
+            featuredProduct: null
         }
     },
     computed: {
@@ -75,6 +88,7 @@ export default {
         },
     },    
     async created() {
+        this.loadFeaturedProducts()
         this.colors = (await fetchColors()).data['hydra:member']
     },
     methods: {
@@ -86,6 +100,14 @@ export default {
         updateQuantity({ productId, colorId, quantity }) {
             //console.log(productId, colorId, quantity)
             this.updateProductQuantity(productId, colorId, quantity)
+        },
+        async loadFeaturedProducts() {
+            const featuredProducts =  (await fetchFeaturedProducts()).data['hydra:member']
+
+            if(featuredProducts.length === 0) {
+                return
+            }
+            [this.featuredProduct] = featuredProducts
         }
     },
 }

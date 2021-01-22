@@ -27,31 +27,13 @@
                         Price: <strong>${{ price }}</strong>
                     </div>
                     <div class="col-8 p-3">
-                        <div class="d-flex align-items-center justify-content-center">
-                            <color-selector
-                             v-if="product.colors.length !== 0" 
-                             @color-selected="updateSelectedColor"
-                             />
-                            <input
-                                v-model.number="quantity"
-                                class="form-control mx-3"
-                                type="number"
-                                min="1"
-                            >
-                            <button class="btn btn-info btn-sm" 
-                            :disabled="cart === null"
-                            @click="addToCart" >
-                                Add to Cart
-                                <i
-                                 v-show="addToCartLoading"
-                                 class="fas fa-spinner fa-spin"
-                                />
-                                <i
-                                 v-show="addToCartSuccess"
-                                 class="fas fa-check"
-                                />
-                            </button>
-                        </div>
+                        <cart-add-controls 
+                            :product="product"
+                            :allow-add-to-cart="cart !== null"
+                            :add-to-cart-loading="addToCartLoading"
+                            :add-to-cart-success="addToCartSuccess"
+                            @add-to-cart="addToCart"
+                        />
                     </div>
                 </div>
             </div>
@@ -60,20 +42,19 @@
 </template>
 <script>
 import { fetchOneProduct } from '@/services/products-service'
-import { addItemToCart, getCartTotalItems } from '@/services/cart-service'
 import Loading from '@/components/loading'
 import TitleComponent from '@/components/title'
-import Title from './title.vue'
-import ColorSelector from '@/components/color-selector'
 import formatPrice from '@/helpers/format-price'
 import ShoppingCartMixin from'@/mixins/get-shopping-cart'
+import ProductCartAddControls from '@/components/product-show/'
+import CartAddControls from './cart-add-controls.vue'
 
 export default {
     name: 'ProductShow',  
     components: {
         Loading,
         TitleComponent,
-        ColorSelector,
+        CartAddControls,
     }, 
     mixins: [ShoppingCartMixin], 
     props: {
@@ -85,9 +66,7 @@ export default {
     data() {
         return {           
             product: null,
-            loading: true,
-            quantity: 1,
-            selectedColorId: null,
+            loading: true,            
         }
     },
     computed: {
@@ -108,12 +87,10 @@ export default {
         }
     },
     methods: {  
-        addToCart() {
-            this.addProductToCart(this.product, this.selectedColorId, this.quantity)
+        addToCart({ quantity, selectedColorId}) {
+            this.addProductToCart(this.product, selectedColorId, quantity)
         },      
-        updateSelectedColor(iri) {
-            this.selectedColorId = iri
-        }
+        
     }
 }
 </script>
@@ -126,8 +103,6 @@ export default {
         max-width:100%;
         max-height:100%;
     }
-    input {
-        width: 60px;
-    }
+    
 }
 </style>
