@@ -5,24 +5,26 @@
     v-if="product.colors.length !== 0" 
     @color-selected="updateSelectedColor"
     />
+
   <input
       v-model.number="quantity"
       class="form-control mx-3"
       type="number"
       min="1"
   >
+
   <button class="btn btn-info btn-sm" 
-  :disabled="!allowAddToCart"
-  @click="addToCart" >
-      Add to Cart
-      <i
-        v-show="addToCartLoading"
-        class="fas fa-spinner fa-spin"
-      />
-      <i
-        v-show="addToCartSuccess"
-        class="fas fa-check"
-      />
+    :disabled="!allowAddToCart"
+    @click="addToCart" >
+        {{ addButtonText }}
+        <i
+          v-show="addToCartLoading"
+          class="fas fa-spinner fa-spin"
+        />
+        <i
+          v-show="addToCartSuccess"
+          class="fas fa-check"
+  />
   </button>
 </div>
   
@@ -60,6 +62,10 @@ export default {
       type: Boolean,
       required: true
     },
+    addButtonText: {
+      type: String,
+      default: 'Add to Cart',
+    }
   },
   methods: {
     updateSelectedColor(iri) {

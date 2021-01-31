@@ -47,7 +47,7 @@ import TitleComponent from '@/components/title'
 import formatPrice from '@/helpers/format-price'
 import ShoppingCartMixin from'@/mixins/get-shopping-cart'
 import ProductCartAddControls from '@/components/product-show/'
-import CartAddControls from './cart-add-controls.vue'
+import CartAddControls from '@/components/product-show/cart-add-controls.vue'
 
 export default {
     name: 'ProductShow',  

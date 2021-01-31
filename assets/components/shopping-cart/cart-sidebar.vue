@@ -16,19 +16,44 @@
 
                 ${{ price }}
             </h6>
+            <cart-add-controls 
+                :product="featuredProduct"
+                :allow-add-to-cart="allowAddToCart"
+                :add-to-cart-loading="addToCartLoading"
+                :add-to-cart-success="addToCartSuccess"
+                addButtonText="+"
+                @add-to-cart="$emit('add-to-cart', $event)"
+
+             />
         </div>
     </div>
 </template>
 
 <script>
 import formatPrice from '@/helpers/format-price';
+import CartAddControls from '@/components/product-show/cart-add-controls'
 
 export default {
     name: 'ShoppingCartSidebar',
+    components: {
+        CartAddControls,
+    },
     props: {
         featuredProduct: {
             type: Object,
             required: true,
+        },
+        allowAddToCart: {
+        type: Boolean,
+        required: true
+        },
+        addToCartLoading: {
+        type: Boolean,
+        required: true
+        },
+        addToCartSuccess: {
+        type: Boolean,
+        required: true
         },
     },
     computed: {

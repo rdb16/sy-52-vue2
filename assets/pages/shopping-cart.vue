@@ -1,34 +1,57 @@
-import {
-    fetchProductsById,
-    fetchProducts,
-    fetchFeaturedProducts
-} from '../services/products-service';
-import { fetchColors } from '../services/colors-service';
-import { updateCartItemQuantity } from '../../tutorial/cart-service';
-import { removeItemFromCart } from '../services/cart-service';
 <template>
    <div :class="[$style.component, 'container-fluid']">
         <div class="row">
             <aside class="col-xs-12 col-lg-3" >
                 <cart-sidebar 
                     v-if="featuredProduct" 
-                    :featured-product="featuredProduct" 
+                    :featured-product="featuredProduct"
+                    :allow-add-to-cart="cart !== null"
+                    :add-to-cart-success="addToCartSuccess" 
+                    :add-to-cart-loading="addToCartLoading"
+                    @add-to-cart="addProductToCart(
+                        featuredProduct,
+                        $event.selectedColorId,
+                        $event.quantity
+                    )"
                 />
             </aside>
 
             <div class="col-xs-12 col-lg-9">
-                <title-component text="Shopping Cart" />
+
+                <transition name="fade" mode="out-in">
+                    <title-component :key="currentState" :text="pageTitle" />
+                </transition>
+                
                 <div class="content p-3">
                     <loading v-show="completeCart === null" />
-                    <shopping-cart-list 
-                        v-if="completeCart" 
-                        :items="completeCart.items"
-                        @updateQuantity="updateQuantity"
-                        @removeFromCart="removeProductFromCart(
-                            $event.productId,
-                            $event.colorId
-                        )"
-                    />
+
+                    <transition name="fade" mode="out-in">
+                    
+                        <shopping-cart-list 
+                            v-if="completeCart && currentState === 'cart' " 
+                            :items="completeCart.items"
+                            @updateQuantity="updateQuantity"
+                            @removeFromCart="removeProductFromCart(
+                                $event.productId,
+                                $event.colorId
+                            )"
+                        />
+
+                        <checkout-form
+                            v-if="completeCart && currentState === 'checkout'"
+                        />
+
+                    </transition>
+                    
+                    <div v-if="completeCart && completeCart.items.length > 0"> 
+                        <button 
+                        class="btn btn-primary"
+                        @click="switchState"
+                        >
+                            {{ buttonText }}
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -43,6 +66,7 @@ import ShoppingCartList from '@/components/shopping-cart'
 import CartSidebar from '@/components/shopping-cart/cart-sidebar'
 import { fetchProductsById, fetchFeaturedProducts } from '@/services/products-service'
 import { fetchColors } from '@/services/colors-service'
+import CheckoutForm from '@/components/checkout'
 
 export default {
     name: 'ShoppingCart',
@@ -51,11 +75,13 @@ export default {
         TitleComponent,
         ShoppingCartList,
         CartSidebar,
+        CheckoutForm
        
     },
     mixins: [ShoppingCartMixin],
     data() {
         return {
+            currentState: 'cart',
             products: null,
             colors: null,
             featuredProduct: null
@@ -78,13 +104,23 @@ export default {
                 }            
             });
             return {
-                items: completeItems,
+                // filtre en virant les produits manquants ou en cours de chargement mais pas encore dispo (ajax)
+                items: completeItems.filter((item) => item.product),
             }
-        }
+        },
+        buttonText() {
+            return this.currentState === 'cart' ? 'Checkout >>' : '<< Back'
+        },
+        pageTitle() {
+            return this.currentState === 'cart' ? 'Shopping Cart' : 'Checkout'
+        },
+
     },
     watch: {
-        async cart() {
-            this.loadProducts()
+        // si le nb de produit change dans le chariot on appelle loadProducts
+        'cart.items.length': function watchCartItemsLength() {
+            
+                 this.loadProducts()
         },
     },    
     async created() {
@@ -108,6 +144,9 @@ export default {
                 return
             }
             [this.featuredProduct] = featuredProducts
+        },
+        switchState() {
+            this.currentState = this.currentState === 'cart' ? 'checkout' : 'cart'
         }
     },
 }
@@ -120,6 +159,14 @@ export default {
     .content {
         @include light-component;
     }
+
+    .fade-enter-active, .fade-leave-active {
+        transition: opacity 1s;
+    }
+    .fade-enter, .fade-leave-to {
+        opacity: 0;
+    }
 }
+
     
-</style>
+</style>Ò
